@@ -1,0 +1,223 @@
+{
+  "name": "Drive karierin",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag-hrd-ai",
+          "mode": "list",
+          "cachedResultName": "rag-hrd-ai"
+        },
+        "options": {}
+      },
+      "id": "b3cc9805-f63b-4baf-9b5b-0b41e40dacad",
+      "name": "Pinecone Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        560,
+        -160
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "pineconeApi": {
+          "id": "v351ZZTYbXApLXdK",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d3bacf81-4fed-4805-81fe-499f1df56a98",
+      "name": "Embeddings OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        464,
+        112
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "xxIFR8IkLMnlaljf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "id": "9de8c094-80a2-4c64-bc05-d6dfec424aa1",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        624,
+        112
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "id": "86ce370a-beef-497a-8ebf-992beed3f483",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        704,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1TnxQYXb8nR6L8X4E5fLDCsc7Na7Xm9qA",
+            "mode": "list",
+            "cachedResultName": "folder-RAG-HRD",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1TnxQYXb8nR6L8X4E5fLDCsc7Na7Xm9qA"
+          }
+        },
+        "options": {}
+      },
+      "id": "51a72139-6be5-427e-835e-f391d10b4e0f",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        144,
+        -160
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Il74xYqqem9Tcnah",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "id": "ad7209cc-517c-473a-9539-48e1a435ffd0",
+      "name": "Google Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        320,
+        -160
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Il74xYqqem9Tcnah",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -160
+      ],
+      "id": "6d2edc93-8ae7-495f-a8c0-42a276455864",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b69583c8-d156-40d2-b823-5822d64771ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7914ccb7bb2f24eb0fdaa2f11a6b1abd1e19772a85d1c983f9962d993b09b0e2"
+  },
+  "id": "vGvSFpB5fsG7sUPq",
+  "tags": []
+}

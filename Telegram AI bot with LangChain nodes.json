@@ -1,0 +1,404 @@
+{
+  "name": "Telegram AI bot with LangChain nodes",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 1
+        }
+      },
+      "id": "505f6f44-9d22-4d79-8320-f843db0a2357",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -224,
+        256
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "xxIFR8IkLMnlaljf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}\n",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "ae9e6695-bad6-42e4-9848-49807787968f",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        752,
+        336
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "0d0f77b1-076b-4954-888e-b5bc98b66f02",
+      "credentials": {
+        "telegramApi": {
+          "id": "GU0wm69uQBnTlxta",
+          "name": "Telegram account 2"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}\n",
+        "text": "={{ $('AI Agent').item.json.output.replace(/&/g, \"&amp;\").replace(/>/g, \"&gt;\").replace(/</g, \"&lt;\").replace(/\"/g, \"&quot;\") }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "5ed681b9-c010-4c51-a2d5-936f76a631e8",
+      "name": "Correct errors",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        976,
+        336
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "e33e0672-4a19-448a-817c-91bb2b859525",
+      "credentials": {
+        "telegramApi": {
+          "id": "GU0wm69uQBnTlxta",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "openAiFunctionsAgent",
+        "text": "={{ $json.body?.message || $json.message?.text || $json.message || '' }}",
+        "options": {}
+      },
+      "id": "81ebf8bc-fd72-471c-94d7-8a2479f4d13b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -64,
+        32
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        144
+      ],
+      "id": "0fa1067e-d7e9-4707-8a75-302f73a4c05c",
+      "name": "Telegram Trigger",
+      "webhookId": "f7b24e5c-6669-4601-bc0b-30f3d4ca7c00",
+      "credentials": {
+        "telegramApi": {
+          "id": "SdP7PvRr2oDFT75x",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bc3934df-8d10-48df-9960-f0db1e806328",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        336
+      ],
+      "id": "db771459-d231-4923-b6e6-f035cb064bcf",
+      "name": "Webhook",
+      "webhookId": "bc3934df-8d10-48df-9960-f0db1e806328"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { output: $json.output } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        144
+      ],
+      "id": "f068823f-dd74-428b-9f3c-0491b8d80a40",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Tool ini adalah sumber kebenaran utama (single source of truth) untuk seluruh pengetahuan karier dalam sistem karierinAI.\nAI DILARANG menjawab pertanyaan faktual, karier, atau profesional tanpa terlebih dahulu menggunakan tool ini.\nJawaban harus selalu berdasarkan hasil retrieval Pinecone, bukan asumsi pribadi model.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag-hrd-ai",
+          "mode": "list",
+          "cachedResultName": "rag-hrd-ai"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        256
+      ],
+      "id": "bfcc959d-c3f2-4236-aea3-4a437e53b652",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "v351ZZTYbXApLXdK",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        464
+      ],
+      "id": "0342e92e-7016-4b32-b0a2-44594fa41cb2",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "xxIFR8IkLMnlaljf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "web-app"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        256
+      ],
+      "id": "f84c54d8-744a-4a5f-81ea-63b4a81250d3",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "9N9PR2QIx1DxlJ9O",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0fab176b-0a8c-4f35-adb2-2c9e11c3cbd9",
+              "leftValue": "={{ $('Webhook').isExecuted }}",
+              "rightValue": "web-app",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        240
+      ],
+      "id": "84abc116-c07e-45bc-ab95-80632b32a921",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "description": "call this tool to spesify",
+        "workflowId": {
+          "__rl": true,
+          "value": "vGvSFpB5fsG7sUPq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vGvSFpB5fsG7sUPq",
+          "cachedResultName": "Drive karierin"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        256
+      ],
+      "id": "67540f92-af43-4c4f-b4a3-fe8513cecd02",
+      "name": "Call 'Drive karierin'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Correct errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Drive karierin'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "75ab31ab-1929-4a05-b71a-0cb5d21aca86",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7914ccb7bb2f24eb0fdaa2f11a6b1abd1e19772a85d1c983f9962d993b09b0e2"
+  },
+  "id": "hKWs5p3NUFLQ9pUe",
+  "tags": []
+}
