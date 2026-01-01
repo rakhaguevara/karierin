@@ -1,0 +1,17 @@
+# Cloudflare Tunnel configuration for Karrierin
+# Service: n8n automation & webhook
+
+tunnel: karrierin-n8n
+credentials-file: C:\Users\rakha\.cloudflared\cc21308e-684f-4d10-85c9-f40edacbc54c.json
+
+ingress:
+  # n8n dashboard (UI)
+  - hostname: n8n.karrierin.site
+    service: http://localhost:5678
+
+  # webhook endpoint (Telegram, WebApp, dll)
+  - hostname: webhook.karrierin.site
+    service: http://localhost:5678
+
+  # fallback jika hostname tidak dikenal
+  - service: http_status:404
